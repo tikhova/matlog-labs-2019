@@ -6,7 +6,7 @@ import qualified Data.Bits as Bits
 import Control.Applicative(Applicative(..))
 import Control.Monad (ap)
 
--- parser produced by Happy Version 1.19.10
+-- parser produced by Happy Version 1.19.11
 
 data HappyAbsSyn t4 t5 t6 t7
 	= HappyTerminal (Token)
@@ -23,7 +23,7 @@ happyExpList = Happy_Data_Array.listArray (0,35) ([8832,4416,256,256,0,276,138,0
 {-# NOINLINE happyExpListPerState #-}
 happyExpListPerState st =
     token_strs_expected
-  where token_strs = ["error","%dummy","%start_parse","Expression","Disjunction","Conjunction","Negation","'('","')'","not","or","and","impl","var","%eof"]
+  where token_strs = ["error","%dummy","%start_parse","Expression","Disjunction","Conjunction","Negation","'('","')'","Not","Or","And","Impl","Var","%eof"]
         bit_start = st * 15
         bit_end = (st + 1) * 15
         read_bit = readArrayBit happyExpList
@@ -130,7 +130,7 @@ happyReduction_2 (HappyAbsSyn4  happy_var_3)
 	_
 	(HappyAbsSyn5  happy_var_1)
 	 =  HappyAbsSyn4
-		 (impl happy_var_1 happy_var_3
+		 (Wrap Impl happy_var_1 happy_var_3
 	)
 happyReduction_2 _ _ _  = notHappyAtAll 
 
@@ -146,7 +146,7 @@ happyReduction_4 (HappyAbsSyn6  happy_var_3)
 	_
 	(HappyAbsSyn5  happy_var_1)
 	 =  HappyAbsSyn5
-		 (or happy_var_1 happy_var_3
+		 (Wrap Or happy_var_1 happy_var_3
 	)
 happyReduction_4 _ _ _  = notHappyAtAll 
 
@@ -162,7 +162,7 @@ happyReduction_6 (HappyAbsSyn7  happy_var_3)
 	_
 	(HappyAbsSyn6  happy_var_1)
 	 =  HappyAbsSyn6
-		 (and happy_var_1 happy_var_3
+		 (Wrap And happy_var_1 happy_var_3
 	)
 happyReduction_6 _ _ _  = notHappyAtAll 
 
@@ -170,14 +170,14 @@ happyReduce_7 = happySpecReduce_2  7 happyReduction_7
 happyReduction_7 (HappyAbsSyn7  happy_var_2)
 	_
 	 =  HappyAbsSyn7
-		 (not happy_var_2
+		 (Not happy_var_2
 	)
 happyReduction_7 _ _  = notHappyAtAll 
 
 happyReduce_8 = happySpecReduce_1  7 happyReduction_8
 happyReduction_8 (HappyTerminal (TVar happy_var_1))
 	 =  HappyAbsSyn7
-		 (var happy_var_1
+		 (Var happy_var_1
 	)
 happyReduction_8 _  = notHappyAtAll 
 
@@ -241,21 +241,25 @@ happySeq = happyDontSeq
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
 
-data BiFunction = or | and | impl |
+data Sign = Or
+            | And
+            | Impl
+            deriving (Eq, Ord)
 
 instance Show Sign where
-  show impl = "->"
-  show or   = "|"
-  show and  = "&"
+  show Impl = "->"
+  show Or   = "|"
+  show And  = "&"
 
-data Expression = Sign Expression Expression
-                  | not Expression
-                  | var String
+data Expression = Wrap Sign Expression Expression
+                  | Not Expression
+                  | Var String
+                  deriving (Eq, Ord)
 
 instance Show Expression where
-  show (var str) = str
-  show (not exp) = "(!" ++ (show exp) ++ ")"
-  show (fun x y) = "(" ++ show fun ++ "," ++ show x ++ "," ++ show y ++ ")"
+  show (Var str) = str
+  show (Not exp) = "(!" ++ (show exp) ++ ")"
+  show (Wrap x y z) = "(" ++ show x ++ "," ++ show y ++ "," ++ show z ++ ")"
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "<built-in>" #-}

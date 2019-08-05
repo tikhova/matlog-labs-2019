@@ -1,7 +1,7 @@
 module Main where
 
 import Lex
-import Syntax
+import Synt
 
 main = do
   inputString <- getLine

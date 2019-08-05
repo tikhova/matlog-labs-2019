@@ -26,7 +26,7 @@ ${SHHAPPY}: ${HAPPYFILE}
 	happy ${HAPPYFILE}
 
 move_to_zip:
-	zip A.zip -r Makefile ${HSFILE} ${ALEXFILE} ${HAPPYFILE} ${HSALEX} ${HSHAPPY}
+	zip B.zip -r Makefile ${HSFILE} ${ALEXFILE} ${HAPPYFILE} ${HSALEX} ${HSHAPPY}
 
 remove:
 	rm *.hi *.o
