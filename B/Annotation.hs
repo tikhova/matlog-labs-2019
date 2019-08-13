@@ -5,6 +5,6 @@ data Annotation = Axiom Int
                   | ModusPonens (Int, Int)
 
 instance Show Annotation where
-  show (Axiom x)       = "Ax. sch. " ++ show x
-  show (Hypothesis x)  = "Hypothesis " ++ show x
-  show (ModusPonens x) = "M.P. " ++ show x
+  show (Axiom x)            = "Ax. sch. " ++ show x
+  show (Hypothesis x)       = "Hypothesis " ++ show x
+  show (ModusPonens (x, y)) = "M.P. " ++ show x ++ ", " ++ show y

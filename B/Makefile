@@ -1,4 +1,4 @@
-CFLAGS = -O2
+CFLAGS = --make -O2 -i./src:lib -Ilib
 
 ALEXFILE = Lex.x
 HSALEX = Lex.hs
@@ -7,6 +7,8 @@ HAPPYFILE = Synt.y
 HSHAPPY = Synt.hs
 
 HSFILE = Main.hs
+
+SOURCES = ${shell find . lib -type f -name "*.hs"}
 
 all: compilelite remove
 
@@ -25,8 +27,8 @@ ${SHALEX}: ${ALEXFILE}
 ${SHHAPPY}: ${HAPPYFILE}
 	happy ${HAPPYFILE}
 
-move_to_zip:
-	zip B.zip -r Makefile ${HSFILE} ${ALEXFILE} ${HAPPYFILE} ${HSALEX} ${HSHAPPY}
+zip:
+	zip B.zip -r Makefile ${SOURCES} ${ALEXFILE} ${HAPPYFILE}
 
 remove:
 	rm *.hi *.o

@@ -258,8 +258,8 @@ data Expression = Wrap Sign Expression Expression
 
 instance Show Expression where
   show (Var str) = str
-  show (Not exp) = "(!" ++ (show exp) ++ ")"
-  show (Wrap x y z) = "(" ++ show x ++ "," ++ show y ++ "," ++ show z ++ ")"
+  show (Not exp) = "!" ++ (show exp)
+  show (Wrap x y z) = "(" ++ show y ++ " " ++ show x ++ " " ++ show z ++ ")"
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "<built-in>" #-}
