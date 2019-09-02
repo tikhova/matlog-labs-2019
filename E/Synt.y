@@ -40,11 +40,13 @@ import Lex
   %left     Or
   %left     And
   %nonassoc Not
+  %nonassoc Any
+  %nonassoc All
 %%
 
 Header:
   '|-' Expression                       { ([], $2) }
-  | '[' Expressions ']' '|-' Expression { ($2, $5) }
+  | Expressions '|-' Expression         { ($1, $3) }
 
 Expressions:
   Expression                          { [$1] }
@@ -66,12 +68,12 @@ Unary:
   Predicate                           { $1 }
   | Not Unary                         { Not $2 }
   | '(' Expression ')'                { $2 }
-  | Any Var '.' Expression            { Any $2 $4 }
-  | Exists Var '.' Expression         { Exists $2 $4 }
+  | Any Var  Expression               { Any $2 $3 }
+  | Exists Var  Expression            { Exists $2 $3 }
 
 Predicate:
   Pred                                { Predicate $1 [] }
-  | Pred '[' '(' Terms ')' ']'        { Predicate $1 $4 }
+  | Pred '(' Terms ')'                { Predicate $1 $3 }
   | Term '=' Term                     { Predicate "=" [$1, $3] }
 
 Terms:
@@ -100,21 +102,23 @@ parseError _ = error "Parse error"
 data Sign = Or
             | And
             | Impl
-            deriving (Eq, Ord)
+            deriving (Eq, Ord, Show)
 
-data Operation = Add | Mul deriving (Eq, Ord)
+data Operation = Add | Mul deriving (Eq, Ord, Show)
 
 data Expression = Wrap Sign Expression Expression
                   | Not Expression
                   | Any String Expression
                   | Exists String Expression
                   | Predicate String [Term]
-                  deriving (Eq, Ord)
+                  deriving (Eq, Ord, Show)
 
 data Term = WrapT Operation Term Term
             | Function String [Term]
             | Increment Term
             | Var String
             | Zero
-            deriving (Eq, Ord)
+            deriving (Eq, Ord, Show)
+
+
 }

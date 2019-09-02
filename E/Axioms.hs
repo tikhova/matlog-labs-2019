@@ -2,6 +2,7 @@ module Axioms where
 
 import Synt
 import Data.Maybe
+import Variables
 
 isAxiom :: Expression -> Bool
 isAxiom expr =
@@ -44,6 +45,20 @@ isAxiom expr =
     -- 10
     (Wrap Impl (Not (Not a)) a')
       | (a == a') -> True
+    -- 11
+    (Wrap Impl (Any x a) (a'))
+      | substitution == Just (Var "Any") -> True
+      | substitution /= Nothing          -> ((substitute xSub (Var x) a') == a) && free4Substitution (Var x) xSub a
+      where
+        substitution = findSubstitution x a a'
+        xSub = fromJust substitution
+    -- 12
+    (Wrap Impl (a') (Exists x a))
+      | substitution == Just (Var "Any") -> True
+      | substitution /= Nothing          -> ((substitute xSub (Var x) a') == a) && free4Substitution (Var x) xSub a
+      where
+        substitution = findSubstitution x a a'
+        xSub = fromJust substitution
     -- Peano
     -- 1
     (Wrap Impl (Predicate "=" [a, b]) (Predicate "=" [(Function "++" [a']), (Function "++" [b'])]))
@@ -69,27 +84,73 @@ isAxiom expr =
       | (a == a' && a' == a'') && (b == b') -> True
     -- 9
     (Wrap Impl (Wrap And a (Any x (Wrap Impl a' a''))) a''')
-      | (a' == a''') && ((substitute x Zero a') == a) &&
-       ((substitute x (Function "++" [Var x])  a') == a') -> True
+      | (a' == a''') && ((substitute (Var x) Zero a') == a) &&
+       ((substitute (Var x) (Function "++" [Var x])  a') == a') -> True
     otherwise -> False
 
-substitute :: String -> Term -> Expression -> Expression
+substitute :: Term -> Term -> Expression -> Expression
 substitute from to expr = case expr of
   Wrap sign a b -> Wrap sign (substitute from to a) (substitute from to b)
   Not a -> Not (substitute from to a)
   Any x a
-    | x == from -> Any x a
+    | (Var x) == from -> Any x a
     | otherwise -> Any x (substitute from to a)
   Exists x a
-    | x == from -> Exists x a
+    | (Var x) == from -> Exists x a
     | otherwise -> Exists x (substitute from to a)
   Predicate str terms -> Predicate str (Prelude.map (substituteT from to) terms)
 
-substituteT :: String -> Term -> Term -> Term
+substituteT :: Term -> Term -> Term -> Term
 substituteT from to term = case term of
   WrapT op a b -> WrapT op (substituteT from to a) (substituteT from to b)
   Function str terms -> Function str (Prelude.map (substituteT from to) terms)
   Var x
-    | x == from -> to
+    | (Var x) == from -> to
     | otherwise -> Var x
   otherwise -> term
+
+findSubstitution :: String -> Expression -> Expression -> Maybe Term
+findSubstitution x (Wrap sign a b) (Wrap sign' a' b')
+  | sign == sign'                                          = compareSubstitution (findSubstitution x a a') (findSubstitution x b b')
+findSubstitution x (Not a) (Not a')                        = findSubstitution x a a'
+findSubstitution x (Any var a) (Any var' a')               = if (var /= var') then Nothing else findSubstitution x a a'
+findSubstitution x (Exists var a) (Exists var' a')         = if (var /= var') then Nothing else findSubstitution x a a'
+findSubstitution x (Predicate a ts) (Predicate a' ts')
+  | a == a' && length ts == length ts'                     =  if (elem Nothing substitutions)
+                                                              then Nothing
+                                                              else if (elem (Just (Var "Any")) substitutions)
+                                                                then Just (Var "Any")
+                                                                else if (allEqual substitutions)
+                                                                  then head substitutions
+                                                                  else Nothing
+                                                                where substitutions = Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')
+findSubstitution x a b                                     = Nothing
+
+findSubstitutionT :: String -> Term -> Term -> Maybe Term
+findSubstitutionT x (WrapT op a b) (WrapT op' a' b')
+  | op == op'                                             = compareSubstitution (findSubstitutionT x a a') (findSubstitutionT x b b')
+findSubstitutionT x (Function f ts) (Function f' ts')
+  | f == f' && length ts == length ts'                    = if (elem Nothing substitutions)
+                                                              then Nothing
+                                                              else if (elem (Just (Var "Any")) substitutions)
+                                                                then Just (Var "Any")
+                                                                else if (allEqual substitutions)
+                                                                  then head substitutions
+                                                                  else Nothing
+                                                                where substitutions = Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')
+findSubstitutionT x (Increment t) (Increment t')          = findSubstitutionT x t t'
+findSubstitutionT x (Var a) b
+  | a == x                                                = Just b
+findSubstitutionT x a b
+  | a == b                                                = Just (Var "Any")
+  | otherwise                                             = Nothing
+
+
+compareSubstitution :: Maybe Term -> Maybe Term -> Maybe Term
+compareSubstitution a b
+  | a == b                 = a
+  | a == Just (Var "Any")  = b
+  | b == Just (Var "Any")  = a
+  | otherwise              = Nothing
+
+allEqual list = length (Prelude.filter ((/=) $ head list) list) == 0

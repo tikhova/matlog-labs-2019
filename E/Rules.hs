@@ -5,6 +5,7 @@ import Data.Maybe
 import Prelude
 import Data.Map.Strict as M
 import Data.List               (elemIndex)
+import Variables
 
 findIndexes :: Map Int Expression
                -> Map Expression Int
@@ -35,11 +36,7 @@ isAnyRule expr m2num = do
       let index = m2num !? (Wrap Impl phi psi)
       case index of
         Nothing -> False
-        otherwise -> do
-          let busyVars = getBusyVars phi
-          case elemIndex x busyVars of
-            Just _ -> True
-            otherwise -> False
+        otherwise -> notElem x (getFreeVars phi) 
     otherwise -> False
 
 isExistsRule :: Expression
@@ -51,17 +48,5 @@ isExistsRule expr m2num = do
       let index = m2num !? (Wrap Impl psi phi)
       case index of
         Nothing -> False
-        otherwise -> do
-          let busyVars = getBusyVars phi
-          case elemIndex x busyVars of
-            Just _ -> True
-            otherwise -> False
+        otherwise -> notElem x (getFreeVars phi)
     otherwise -> False
-
-getBusyVars :: Expression -> [String]
-getBusyVars expr = case expr of
-  Wrap _ a b -> (getBusyVars a) ++ (getBusyVars b)
-  Not a -> (getBusyVars a)
-  Exists x a -> x : (getBusyVars a)
-  Any x a -> x : (getBusyVars a)
-  otherwise -> []

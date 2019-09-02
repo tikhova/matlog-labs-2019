@@ -1,15 +1,16 @@
 module Main where
 
-import  Lex
-import  Synt
-import  Axioms
-import  Rules
-import  Data.Map.Strict as M
-import  System.IO               (isEOF)
-import  Prelude
-import  Data.List               (elemIndex)
-import  Data.List.Split         (splitOn)
-import  Data.Maybe
+import Lex
+import Synt
+import Axioms
+import Rules
+import Data.Map.Strict as M
+import System.IO               (isEOF)
+import Prelude
+import Data.List               (elemIndex)
+import Data.List.Split         (splitOn)
+import Data.Maybe
+import Variables
 
 checkProof :: Map Int Expression
               -> Map Expression Int
@@ -25,10 +26,17 @@ checkProof m2expr m2num hyps forMP (proven, num) final = do
     else do
         line <- getLine
         let expr = parseExpression $ alexScanTokens line
+        putStrLn $ show expr
         let correct = check expr m2expr m2num hyps forMP
         if correct
           then
-            checkProof m2expr m2num hyps forMP (proven && (expr == final), num + 1) final
+            checkProof (insert num expr m2expr)
+                       (insert expr num m2num)
+                       hyps
+                       (case expr of
+                         Wrap Impl a b -> insertWith (++) b [num] forMP
+                         otherwise     -> forMP)
+                       (proven || (expr == final && notElem expr hyps), num + 1) final
           else
             return (proven, num)
 
@@ -40,13 +48,13 @@ check :: Expression
          -> Bool
 check expr m2expr m2num hyps forMP = hyp || axiom || mp || isAny || isExists
     where
-      hyp = case elemIndex expr hyps of
-        Just h -> True
-        Nothing -> False
+      hyp = elem expr hyps
       axiom = isAxiom expr
       mp = isMP expr m2expr m2num forMP
       isAny = isAnyRule expr m2num
       isExists = isExistsRule expr m2num
+
+
 
 main = do
   firstLine <- getLine
