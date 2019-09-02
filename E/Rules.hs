@@ -36,7 +36,7 @@ isAnyRule expr m2num = do
       let index = m2num !? (Wrap Impl phi psi)
       case index of
         Nothing -> False
-        otherwise -> notElem x (getFreeVars phi) 
+        otherwise -> not $ hasFreeOccurence x phi
     otherwise -> False
 
 isExistsRule :: Expression
@@ -48,5 +48,5 @@ isExistsRule expr m2num = do
       let index = m2num !? (Wrap Impl psi phi)
       case index of
         Nothing -> False
-        otherwise -> notElem x (getFreeVars phi)
+        otherwise -> not $ hasFreeOccurence x phi
     otherwise -> False

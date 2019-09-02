@@ -24,7 +24,7 @@ data HappyAbsSyn t5 t6 t7 t8 t9 t10 t11 t12 t13 t14 t15
 	| HappyAbsSyn15 t15
 
 happyExpList :: Happy_Data_Array.Array Int Int
-happyExpList = Happy_Data_Array.listArray (0,178) ([32768,25120,13,17424,172,0,8192,16384,45328,2,0,0,0,0,0,0,0,0,0,0,0,0,16512,0,8192,0,0,8,2048,22050,0,50241,10,32,0,0,16,0,512,0,16,0,0,0,0,0,0,0,128,4096,0,8192,22664,1,4356,43,128,1026,4096,44100,0,34946,21,64,513,0,0,0,2,0,64,129,0,0,32768,512,4,16400,128,512,4104,16384,45328,2,8712,86,16640,2756,0,0,0,0,0,32768,0,0,0,0,4096,0,64,513,0,128,0,8192,0,0,0,0,0,0,1,0,33024,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,128,1026,0,0,0,4100,0,0,0,0
+happyExpList = Happy_Data_Array.listArray (0,172) ([32768,25120,13,17424,172,0,8192,16384,45328,2,0,0,32768,2,0,32,0,0,0,0,0,0,16512,0,8192,0,0,8,2048,22050,0,50241,10,32,0,0,16,0,512,0,16,0,0,0,0,0,0,0,128,4096,0,8192,22664,1,4356,43,128,1026,4096,44100,0,34946,21,64,513,0,0,0,2,0,64,129,0,0,32768,512,4,16400,128,512,4104,16384,45328,2,8712,86,16640,2756,0,0,0,0,0,32768,0,0,0,0,4096,0,64,513,0,128,0,8192,0,0,0,0,0,0,1,0,33024,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,128,1026,0,0,0,4100,0,0,0,0
 	])
 
 {-# NOINLINE happyExpListPerState #-}
@@ -226,10 +226,7 @@ action_25 (30) = happyShift action_15
 action_25 (31) = happyShift action_16
 action_25 (33) = happyShift action_17
 action_25 (35) = happyShift action_18
-action_25 (7) = happyGoto action_51
-action_25 (8) = happyGoto action_5
-action_25 (9) = happyGoto action_6
-action_25 (10) = happyGoto action_7
+action_25 (10) = happyGoto action_51
 action_25 (11) = happyGoto action_8
 action_25 (13) = happyGoto action_9
 action_25 (14) = happyGoto action_10
@@ -243,10 +240,7 @@ action_26 (30) = happyShift action_15
 action_26 (31) = happyShift action_16
 action_26 (33) = happyShift action_17
 action_26 (35) = happyShift action_18
-action_26 (7) = happyGoto action_50
-action_26 (8) = happyGoto action_5
-action_26 (9) = happyGoto action_6
-action_26 (10) = happyGoto action_7
+action_26 (10) = happyGoto action_50
 action_26 (11) = happyGoto action_8
 action_26 (13) = happyGoto action_9
 action_26 (14) = happyGoto action_10
@@ -514,7 +508,7 @@ happyReduction_14 _
 happyReduction_14 _ _ _  = notHappyAtAll 
 
 happyReduce_15 = happySpecReduce_3  10 happyReduction_15
-happyReduction_15 (HappyAbsSyn7  happy_var_3)
+happyReduction_15 (HappyAbsSyn10  happy_var_3)
 	(HappyTerminal (TVar happy_var_2))
 	_
 	 =  HappyAbsSyn10
@@ -523,7 +517,7 @@ happyReduction_15 (HappyAbsSyn7  happy_var_3)
 happyReduction_15 _ _ _  = notHappyAtAll 
 
 happyReduce_16 = happySpecReduce_3  10 happyReduction_16
-happyReduction_16 (HappyAbsSyn7  happy_var_3)
+happyReduction_16 (HappyAbsSyn10  happy_var_3)
 	(HappyTerminal (TVar happy_var_2))
 	_
 	 =  HappyAbsSyn10

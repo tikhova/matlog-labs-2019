@@ -31,17 +31,11 @@ import Lex
   '0'       { TZero }
   '|-'      { TTur }
 
-  %nonassoc '|-'
-  %nonassoc '='
-  %nonassoc Increment
   %left     Mul
   %left     Add
   %right    Impl
   %left     Or
   %left     And
-  %nonassoc Not
-  %nonassoc Any
-  %nonassoc All
 %%
 
 Header:
@@ -68,8 +62,8 @@ Unary:
   Predicate                           { $1 }
   | Not Unary                         { Not $2 }
   | '(' Expression ')'                { $2 }
-  | Any Var  Expression               { Any $2 $3 }
-  | Exists Var  Expression            { Exists $2 $3 }
+  | Any Var Unary                     { Any $2 $3 }
+  | Exists Var Unary                  { Exists $2 $3 }
 
 Predicate:
   Pred                                { Predicate $1 [] }

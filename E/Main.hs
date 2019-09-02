@@ -26,7 +26,6 @@ checkProof m2expr m2num hyps forMP (proven, num) final = do
     else do
         line <- getLine
         let expr = parseExpression $ alexScanTokens line
-        putStrLn $ show expr
         let correct = check expr m2expr m2num hyps forMP
         if correct
           then
@@ -36,7 +35,7 @@ checkProof m2expr m2num hyps forMP (proven, num) final = do
                        (case expr of
                          Wrap Impl a b -> insertWith (++) b [num] forMP
                          otherwise     -> forMP)
-                       (proven || (expr == final && notElem expr hyps), num + 1) final
+                       (proven || (expr == final), num + 1) final
           else
             return (proven, num)
 

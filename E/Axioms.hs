@@ -47,15 +47,15 @@ isAxiom expr =
       | (a == a') -> True
     -- 11
     (Wrap Impl (Any x a) (a'))
-      | substitution == Just (Var "Any") -> True
-      | substitution /= Nothing          -> ((substitute xSub (Var x) a') == a) && free4Substitution (Var x) xSub a
+      | substitution == Just (Var "+") -> True
+      | substitution /= Nothing          -> ((substitute (Var x) xSub a) == a') && free4Substitution (Var x) xSub a
       where
         substitution = findSubstitution x a a'
         xSub = fromJust substitution
     -- 12
     (Wrap Impl (a') (Exists x a))
-      | substitution == Just (Var "Any") -> True
-      | substitution /= Nothing          -> ((substitute xSub (Var x) a') == a) && free4Substitution (Var x) xSub a
+      | substitution == Just (Var "+") -> True
+      | substitution /= Nothing          -> ((substitute (Var x) xSub a) == a') && free4Substitution (Var x) xSub a
       where
         substitution = findSubstitution x a a'
         xSub = fromJust substitution
@@ -85,7 +85,7 @@ isAxiom expr =
     -- 9
     (Wrap Impl (Wrap And a (Any x (Wrap Impl a' a''))) a''')
       | (a' == a''') && ((substitute (Var x) Zero a') == a) &&
-       ((substitute (Var x) (Function "++" [Var x])  a') == a') -> True
+       ((substitute (Var x) (Function "++" [Var x])  a') == a'') -> True
     otherwise -> False
 
 substitute :: Term -> Term -> Expression -> Expression
@@ -116,41 +116,39 @@ findSubstitution x (Not a) (Not a')                        = findSubstitution x 
 findSubstitution x (Any var a) (Any var' a')               = if (var /= var') then Nothing else findSubstitution x a a'
 findSubstitution x (Exists var a) (Exists var' a')         = if (var /= var') then Nothing else findSubstitution x a a'
 findSubstitution x (Predicate a ts) (Predicate a' ts')
-  | a == a' && length ts == length ts'                     =  if (elem Nothing substitutions)
-                                                              then Nothing
-                                                              else if (elem (Just (Var "Any")) substitutions)
-                                                                then Just (Var "Any")
-                                                                else if (allEqual substitutions)
-                                                                  then head substitutions
+  | a == a' && length ts == length ts'                     =  if (allEqual subsWOAny)
+                                                                then Just $ head subsWOAny
+                                                                else if (elem (Var "+") substitutions)
+                                                                  then Just (Var "+")
                                                                   else Nothing
-                                                                where substitutions = Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')
+                                                            where substitutions = catMaybes $ Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')
+                                                                  subsWOAny     = filter ((/=) (Var "+")) substitutions
 findSubstitution x a b                                     = Nothing
 
 findSubstitutionT :: String -> Term -> Term -> Maybe Term
 findSubstitutionT x (WrapT op a b) (WrapT op' a' b')
   | op == op'                                             = compareSubstitution (findSubstitutionT x a a') (findSubstitutionT x b b')
 findSubstitutionT x (Function f ts) (Function f' ts')
-  | f == f' && length ts == length ts'                    = if (elem Nothing substitutions)
-                                                              then Nothing
-                                                              else if (elem (Just (Var "Any")) substitutions)
-                                                                then Just (Var "Any")
-                                                                else if (allEqual substitutions)
-                                                                  then head substitutions
+  | f == f' && length ts == length ts'                    = if (allEqual subsWOAny)
+                                                                then Just $ head subsWOAny
+                                                                else if (elem (Var "+") substitutions)
+                                                                  then Just (Var "+")
                                                                   else Nothing
-                                                                where substitutions = Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')
+                                                            where substitutions = catMaybes $ Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')
+                                                                  subsWOAny     = filter ((/=) (Var "+")) substitutions
 findSubstitutionT x (Increment t) (Increment t')          = findSubstitutionT x t t'
 findSubstitutionT x (Var a) b
   | a == x                                                = Just b
 findSubstitutionT x a b
-  | a == b                                                = Just (Var "Any")
+  | a == b                                                = Just (Var "+")
   | otherwise                                             = Nothing
 
 
 compareSubstitution :: Maybe Term -> Maybe Term -> Maybe Term
 compareSubstitution a b
   | a == b                 = a
-  | a == Just (Var "Any")  = b
-  | b == Just (Var "Any")  = a
+  | a == Just (Var "+")  = b
+  | b == Just (Var "+")  = a
   | otherwise              = Nothing
 
 allEqual list = length (Prelude.filter ((/=) $ head list) list) == 0
