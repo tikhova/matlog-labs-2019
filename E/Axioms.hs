@@ -46,14 +46,14 @@ isAxiom expr =
     (Wrap Impl (Not (Not a)) a')
       | (a == a') -> True
     -- 11
-    (Wrap Impl (Any x a) (a'))
+    (Wrap Impl (Quant Any x a) (a'))
       | substitution == Just (Var "+") -> True
       | substitution /= Nothing          -> ((substitute (Var x) xSub a) == a') && free4Substitution (Var x) xSub a
       where
         substitution = findSubstitution x a a'
         xSub = fromJust substitution
     -- 12
-    (Wrap Impl (a') (Exists x a))
+    (Wrap Impl (a') (Quant Exists x a))
       | substitution == Just (Var "+") -> True
       | substitution /= Nothing          -> ((substitute (Var x) xSub a) == a') && free4Substitution (Var x) xSub a
       where
@@ -83,7 +83,7 @@ isAxiom expr =
     (Predicate "=" [(WrapT Mul a (Function "++" [b])), (WrapT Add (WrapT Mul a' b') a'')])
       | (a == a' && a' == a'') && (b == b') -> True
     -- 9
-    (Wrap Impl (Wrap And a (Any x (Wrap Impl a' a''))) a''')
+    (Wrap Impl (Wrap And a (Quant Any x (Wrap Impl a' a''))) a''')
       | (a' == a''') && ((substitute (Var x) Zero a') == a) &&
        ((substitute (Var x) (Function "++" [Var x])  a') == a'') -> True
     otherwise -> False
@@ -92,12 +92,9 @@ substitute :: Term -> Term -> Expression -> Expression
 substitute from to expr = case expr of
   Wrap sign a b -> Wrap sign (substitute from to a) (substitute from to b)
   Not a -> Not (substitute from to a)
-  Any x a
-    | (Var x) == from -> Any x a
-    | otherwise -> Any x (substitute from to a)
-  Exists x a
-    | (Var x) == from -> Exists x a
-    | otherwise -> Exists x (substitute from to a)
+  Quant q x a
+    | (Var x) == from -> Quant q x a
+    | otherwise -> Quant q x (substitute from to a)
   Predicate str terms -> Predicate str (Prelude.map (substituteT from to) terms)
 
 substituteT :: Term -> Term -> Term -> Term
@@ -113,10 +110,9 @@ findSubstitution :: String -> Expression -> Expression -> Maybe Term
 findSubstitution x (Wrap sign a b) (Wrap sign' a' b')
   | sign == sign'                                          = compareSubstitution (findSubstitution x a a') (findSubstitution x b b')
 findSubstitution x (Not a) (Not a')                        = findSubstitution x a a'
-findSubstitution x (Any var a) (Any var' a')               = if (var /= var') then Nothing else findSubstitution x a a'
-findSubstitution x (Exists var a) (Exists var' a')         = if (var /= var') then Nothing else findSubstitution x a a'
+findSubstitution x (Quant q var a) (Quant q' var' a')      = if (var /= var') || (q /= q') then Nothing else findSubstitution x a a'
 findSubstitution x (Predicate a ts) (Predicate a' ts')
-  | a == a' && length ts == length ts'                     =  if (allEqual subsWOAny)
+  | a == a' && length ts == length ts'                     =  if (length subsWOAny /= 0) && (allEqual subsWOAny)
                                                                 then Just $ head subsWOAny
                                                                 else if (elem (Var "+") substitutions)
                                                                   then Just (Var "+")
@@ -129,7 +125,7 @@ findSubstitutionT :: String -> Term -> Term -> Maybe Term
 findSubstitutionT x (WrapT op a b) (WrapT op' a' b')
   | op == op'                                             = compareSubstitution (findSubstitutionT x a a') (findSubstitutionT x b b')
 findSubstitutionT x (Function f ts) (Function f' ts')
-  | f == f' && length ts == length ts'                    = if (allEqual subsWOAny)
+  | f == f' && length ts == length ts'                    = if (length subsWOAny /= 0) && (allEqual subsWOAny)
                                                                 then Just $ head subsWOAny
                                                                 else if (elem (Var "+") substitutions)
                                                                   then Just (Var "+")

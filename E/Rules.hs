@@ -32,11 +32,10 @@ isAnyRule :: Expression
          -> Bool
 isAnyRule expr m2num = do
   case expr of
-    (Wrap Impl phi (Any x psi)) -> do
-      let index = m2num !? (Wrap Impl phi psi)
-      case index of
-        Nothing -> False
-        otherwise -> not $ hasFreeOccurence x phi
+    (Wrap Impl phi (Quant Any x psi)) -> do
+      if (M.member (Wrap Impl phi psi) m2num)
+        then not $ hasFreeOccurence x phi
+        else False
     otherwise -> False
 
 isExistsRule :: Expression
@@ -44,9 +43,8 @@ isExistsRule :: Expression
          -> Bool
 isExistsRule expr m2num = do
   case expr of
-    (Wrap Impl (Exists x psi) phi) -> do
-      let index = m2num !? (Wrap Impl psi phi)
-      case index of
-        Nothing -> False
-        otherwise -> not $ hasFreeOccurence x phi
+    (Wrap Impl (Quant Exists x psi) phi) -> do
+      if (M.member (Wrap Impl psi phi) m2num)
+        then not $ hasFreeOccurence x phi
+        else False
     otherwise -> False

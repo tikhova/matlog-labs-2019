@@ -512,7 +512,7 @@ happyReduction_15 (HappyAbsSyn10  happy_var_3)
 	(HappyTerminal (TVar happy_var_2))
 	_
 	 =  HappyAbsSyn10
-		 (Any happy_var_2 happy_var_3
+		 (Quant Any happy_var_2 happy_var_3
 	)
 happyReduction_15 _ _ _  = notHappyAtAll 
 
@@ -521,7 +521,7 @@ happyReduction_16 (HappyAbsSyn10  happy_var_3)
 	(HappyTerminal (TVar happy_var_2))
 	_
 	 =  HappyAbsSyn10
-		 (Exists happy_var_2 happy_var_3
+		 (Quant Exists happy_var_2 happy_var_3
 	)
 happyReduction_16 _ _ _  = notHappyAtAll 
 
@@ -714,10 +714,11 @@ data Sign = Or
 
 data Operation = Add | Mul deriving (Eq, Ord, Show)
 
+data Quantifier = Any | Exists deriving (Eq, Ord, Show)
+
 data Expression = Wrap Sign Expression Expression
                   | Not Expression
-                  | Any String Expression
-                  | Exists String Expression
+                  | Quant Quantifier String Expression
                   | Predicate String [Term]
                   deriving (Eq, Ord, Show)
 

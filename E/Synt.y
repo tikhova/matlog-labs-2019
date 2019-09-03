@@ -62,8 +62,8 @@ Unary:
   Predicate                           { $1 }
   | Not Unary                         { Not $2 }
   | '(' Expression ')'                { $2 }
-  | Any Var Unary                     { Any $2 $3 }
-  | Exists Var Unary                  { Exists $2 $3 }
+  | Any Var Unary                     { Quant Any $2 $3 }
+  | Exists Var Unary                  { Quant Exists $2 $3 }
 
 Predicate:
   Pred                                { Predicate $1 [] }
@@ -100,10 +100,11 @@ data Sign = Or
 
 data Operation = Add | Mul deriving (Eq, Ord, Show)
 
+data Quantifier = Any | Exists deriving (Eq, Ord, Show)
+
 data Expression = Wrap Sign Expression Expression
                   | Not Expression
-                  | Any String Expression
-                  | Exists String Expression
+                  | Quant Quantifier String Expression
                   | Predicate String [Term]
                   deriving (Eq, Ord, Show)
 
@@ -113,6 +114,4 @@ data Term = WrapT Operation Term Term
             | Var String
             | Zero
             deriving (Eq, Ord, Show)
-
-
 }
