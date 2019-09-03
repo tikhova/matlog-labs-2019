@@ -27,7 +27,7 @@ tokens :-
   \@      { \s -> TAny }
   \?      { \s -> TExists }
   "->"    { \s -> TImpl }
-  "0"      { \s -> TZero }
+  "0"     { \s -> TZero }
   \=      { \s -> TEq }
   "|-"    { \s -> TTur }
   $alpha [$digit]* { \s -> TVar s }

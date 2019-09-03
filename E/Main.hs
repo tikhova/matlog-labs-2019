@@ -4,13 +4,10 @@ import Lex
 import Synt
 import Axioms
 import Rules
+import Variables
 import Data.Map.Strict as M
 import System.IO               (isEOF)
 import Prelude
-import Data.List               (elemIndex)
-import Data.List.Split         (splitOn)
-import Data.Maybe
-import Variables
 
 checkProof :: Map Int Expression
               -> Map Expression Int
@@ -24,20 +21,19 @@ checkProof m2expr m2num hyps forMP (proven, num) final = do
   if eof
     then return (proven, 0)
     else do
-        line <- getLine
-        let expr = parseExpression $ alexScanTokens line
-        let correct = check expr m2expr m2num hyps forMP
-        if correct
-          then
-            checkProof (insert num expr m2expr)
-                       (insert expr num m2num)
-                       hyps
-                       (case expr of
-                         Wrap Impl a b -> insertWith (++) b [num] forMP
-                         otherwise     -> forMP)
-                       (proven || (expr == final), num + 1) final
-          else
-            return (proven, num)
+      line <- getLine
+      let expr = parseExpression $ alexScanTokens line
+      let correct = check expr m2expr m2num hyps forMP
+      if correct
+        then
+          checkProof (insert num expr m2expr)
+                     (insert expr num m2num)
+                     hyps
+                     (case expr of
+                       Wrap Impl a b -> insertWith (++) b [num] forMP
+                       otherwise     -> forMP)
+                     (proven || (expr == final), num + 1) final
+        else return (proven, num)
 
 check :: Expression
          -> Map Int Expression
@@ -57,7 +53,7 @@ check expr m2expr m2num hyps forMP = hyp || axiom || mp || isAny || isExists
 
 main = do
   firstLine <- getLine
-  let (hyps, expr)   = parseHeader $ alexScanTokens firstLine
+  let (hyps, expr) = parseHeader $ alexScanTokens firstLine
   result <- checkProof M.empty M.empty hyps M.empty (False, 1) expr
   case result of
     (True, 0) -> putStrLn "Proof is correct"

@@ -1,20 +1,16 @@
 module Rules where
 
 import Synt
-import Data.Maybe
+import Variables
 import Prelude
 import Data.Map.Strict as M
-import Data.List               (elemIndex)
-import Variables
 
-findIndexes :: Map Int Expression
+isAchievable :: Map Int Expression
                -> Map Expression Int
                -> Int
                -> Bool
-findIndexes m2expr m2num k = case m2expr ! k of
- Wrap Impl a b -> case m2num !? a of
-   Just i  -> True
-   Nothing -> False
+isAchievable m2expr m2num k = case m2expr ! k of
+ Wrap Impl a b -> M.member a m2num
  otherwise -> False
 
 
@@ -24,14 +20,13 @@ isMP :: Expression
         -> Map Expression [Int]
         -> Bool
 isMP expr m2expr m2num forMP = case forMP !? expr of
- Just list -> or $ Prelude.map (findIndexes m2expr m2num) list
+ Just list -> or $ Prelude.map (isAchievable m2expr m2num) list
  Nothing   -> False
 
 isAnyRule :: Expression
          -> Map Expression Int
          -> Bool
-isAnyRule expr m2num = do
-  case expr of
+isAnyRule expr m2num = case expr of
     (Wrap Impl phi (Quant Any x psi)) -> do
       if (M.member (Wrap Impl phi psi) m2num)
         then not $ hasFreeOccurence x phi
@@ -41,8 +36,7 @@ isAnyRule expr m2num = do
 isExistsRule :: Expression
          -> Map Expression Int
          -> Bool
-isExistsRule expr m2num = do
-  case expr of
+isExistsRule expr m2num = case expr of
     (Wrap Impl (Quant Exists x psi) phi) -> do
       if (M.member (Wrap Impl psi phi) m2num)
         then not $ hasFreeOccurence x phi

@@ -39,8 +39,8 @@ import Lex
 %%
 
 Header:
-  '|-' Expression                       { ([], $2) }
-  | Expressions '|-' Expression         { ($1, $3) }
+  '|-' Expression                     { ([], $2) }
+  | Expressions '|-' Expression       { ($1, $3) }
 
 Expressions:
   Expression                          { [$1] }

@@ -1,11 +1,8 @@
 module Variables where
 
 import Synt
-import Data.Maybe
 import Prelude
 import Data.Map.Strict as M
-import Data.List               (elemIndex)
-
 
 getAllVarsT :: Term -> [String]
 getAllVarsT term = case term of
@@ -22,12 +19,12 @@ hasFreeOccurence x expr = case expr of
   Quant _ x' a
     | x' == x    -> False
     | otherwise  -> (hasFreeOccurence x a)
-  Predicate _ ts -> (length ts /= 0) && (or $ Prelude.map (hasFreeOccurenceT x) ts)
+  Predicate _ ts -> (or $ Prelude.map (hasFreeOccurenceT x) ts)
 
 hasFreeOccurenceT :: String -> Term -> Bool
 hasFreeOccurenceT x term = case term of
   WrapT _ a b   -> (hasFreeOccurenceT x a) || (hasFreeOccurenceT x b)
-  Function _ ts -> (length ts /= 0) && (or $ Prelude.map (hasFreeOccurenceT x) ts)
+  Function _ ts -> (or $ Prelude.map (hasFreeOccurenceT x) ts)
   Increment a   -> (hasFreeOccurenceT x a)
   Var x'        -> x' == x
   otherwise     -> False
@@ -36,11 +33,11 @@ free4Substitution :: Term -> Term -> Expression -> Bool
 free4Substitution x xSub expr
   | x == xSub = True
   | otherwise = case expr of
-    Wrap _ a b  -> (free4Substitution x xSub a) && (free4Substitution x xSub b)
-    Not a       -> free4Substitution x xSub a
-    Quant _ x' a -> if elem x' present
-                    then (noOccurence x a)
-                    else free4Substitution x xSub a
+    Wrap _ a b    -> (free4Substitution x xSub a) && (free4Substitution x xSub b)
+    Not a         -> free4Substitution x xSub a
+    Quant _ x' a  -> if elem x' present
+                      then (noOccurence x a)
+                      else free4Substitution x xSub a
     Predicate _ _ -> True
     where present = getAllVarsT xSub
 
@@ -48,7 +45,7 @@ noOccurence :: Term -> Expression -> Bool
 noOccurence x expr = case expr of
   Wrap _ a b     -> (noOccurence x a) && (noOccurence x b)
   Not a          -> noOccurence x a
-  Quant _ x' a    -> noOccurence x a
+  Quant _ x' a   -> noOccurence x a
   Predicate _ ts -> and $ Prelude.map (noOccurenceT x) ts
 
 noOccurenceT :: Term -> Term -> Bool
