@@ -6,19 +6,6 @@ import Prelude
 import Data.Map.Strict as M
 import Data.List               (elemIndex)
 
-getBusyVars :: Expression -> [String]
-getBusyVars expr = case expr of
-  Wrap _ a b  -> (getBusyVars a) ++ (getBusyVars b)
-  Not a       -> (getBusyVars a)
-  Quant _ x a -> x : (getBusyVars a)
-  otherwise   -> []
-
-getAllVars :: Expression -> [String]
-getAllVars expr = case expr of
-  Wrap _ a b      -> (getAllVars a) ++ (getAllVars b)
-  Not a           -> (getAllVars a)
-  Quant _ x a     -> x : (getAllVars a)
-  Predicate _ ts  -> concat $ Prelude.map getAllVarsT ts
 
 getAllVarsT :: Term -> [String]
 getAllVarsT term = case term of
@@ -27,9 +14,6 @@ getAllVarsT term = case term of
   Increment a   -> getAllVarsT a
   Var x         -> [x]
   otherwise     -> []
-
-getFreeVars :: Expression -> [String]
-getFreeVars expr = Prelude.filter (flip notElem (getBusyVars expr)) (getAllVars expr)
 
 hasFreeOccurence :: String -> Expression -> Bool
 hasFreeOccurence x expr = case expr of
