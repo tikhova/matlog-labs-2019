@@ -101,10 +101,11 @@ substituteT :: Term -> Term -> Term -> Term
 substituteT from to term = case term of
   WrapT op a b        -> WrapT op (substituteT from to a) (substituteT from to b)
   Function str terms  -> Function str (Prelude.map (substituteT from to) terms)
+  Increment a         -> Increment (substituteT from to a)
   Var x
     | (Var x) == from -> to
     | otherwise       -> Var x
-  otherwise           -> term
+  Zero                -> Zero
 
 findSubstitution :: String -> Expression -> Expression -> Maybe Term
 findSubstitution x (Wrap sign a b) (Wrap sign' a' b')
@@ -114,7 +115,7 @@ findSubstitution x (Quant q var a) (Quant q' var' a')      = if (var /= var') ||
 findSubstitution x (Predicate a ts) (Predicate a' ts')
   | a == a' && length ts == length ts'                     =  if (length subsWOAny /= 0) && (allEqual subsWOAny)
                                                                 then Just $ head subsWOAny
-                                                                else if (elem (Var "+") substitutions)
+                                                                else if (elem (Var "+") substitutions) && (length subsWOAny == 0)
                                                                   then Just (Var "+")
                                                                   else Nothing
                                                               where substitutions = catMaybes $ Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')
@@ -127,7 +128,7 @@ findSubstitutionT x (WrapT op a b) (WrapT op' a' b')
 findSubstitutionT x (Function f ts) (Function f' ts')
   | f == f' && length ts == length ts'                    = if (length subsWOAny /= 0) && (allEqual subsWOAny)
                                                                 then Just $ head subsWOAny
-                                                                else if (elem (Var "+") substitutions)
+                                                                else if (elem (Var "+") substitutions) && (length subsWOAny == 0)
                                                                   then Just (Var "+")
                                                                   else Nothing
                                                             where substitutions = catMaybes $ Prelude.map (uncurry (findSubstitutionT x)) (zip ts ts')

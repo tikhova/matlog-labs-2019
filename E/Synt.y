@@ -11,8 +11,6 @@ import Lex
 %token
   '('       { TLBracket }
   ')'       { TRBracket }
-  '['       { TLSBracket }
-  ']'       { TRSBracket }
   ','       { TComma }
   '.'       { TDot }
   Not       { TNot }
@@ -25,7 +23,6 @@ import Lex
   Increment { TIncr }
   Exists    { TExists }
   Any       { TAny }
-  Break     { TBreak }
   Pred      { TPredicate $$ }
   '='       { TEq }
   '0'       { TZero }
@@ -62,8 +59,8 @@ Unary:
   Predicate                           { $1 }
   | Not Unary                         { Not $2 }
   | '(' Expression ')'                { $2 }
-  | Any Var Unary                     { Quant Any $2 $3 }
-  | Exists Var Unary                  { Quant Exists $2 $3 }
+  | Any Var '.' Expression            { Quant Any $2 $4 }
+  | Exists Var '.' Expression         { Quant Exists $2 $4 }
 
 Predicate:
   Pred                                { Predicate $1 [] }
